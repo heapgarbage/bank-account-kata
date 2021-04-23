@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    compileOnly             group: 'org.projectlombok',     name: 'lombok',         version: property('lombok.version')
+    testImplementation      group: 'org.assertj',           name: 'assertj-core',   version: property('assertj.version')
+
+    testCompile             group: 'junit',                 name: 'junit',          version: property('junit.version')
+}
