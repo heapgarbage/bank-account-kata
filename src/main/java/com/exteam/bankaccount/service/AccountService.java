@@ -6,6 +6,7 @@ import com.exteam.bankaccount.model.Operation;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Service class for {@link Account}.
@@ -59,5 +60,12 @@ public class AccountService {
             account.setBalance(account.getBalance() - amount);
         }
         account.getHistory().add(new Operation(Instant.now(), amount, operationType));
+    }
+
+    /**
+     * Return the operations of the account.
+     */
+    public List<Operation> checkOperations() {
+        return Account.getInstance().getHistory();
     }
 }

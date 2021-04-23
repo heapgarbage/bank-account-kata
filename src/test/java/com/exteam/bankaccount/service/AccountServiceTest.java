@@ -163,6 +163,37 @@ public class AccountServiceTest {
         assertThat(account.getHistory()).isEmpty();
     }
 
+    @Test
+    public void should_get_the_operations_of_the_account() throws AccountServiceException {
+        //Given
+        long amount1 = 500;
+        long amount2 = 200;
+        long amount3 = 250;
+        Instant now = Instant.now();
+
+        //when
+        accountService.makeDeposit(amount1);
+        accountService.makeDeposit(amount2);
+        accountService.makeWithdrawal(amount3);
+
+        //Then
+        Account account = Account.getInstance();
+        assertThat(account)
+                .extracting(Account::getBalance).isEqualTo(amount1 + amount2 - amount3);
+
+        assertThat(account.getHistory())
+                .extracting(Operation::getAmount, Operation::getType)
+                .containsExactlyInAnyOrder(Tuple.tuple(amount1, Operation.OperationType.DEPOSIT),
+                        Tuple.tuple(amount2, Operation.OperationType.DEPOSIT),
+                        Tuple.tuple(amount3, Operation.OperationType.WITHDRAWAL));
+
+        assertThat(account.getHistory())
+                .extracting(Operation::getDate)
+                .allSatisfy(date -> assertThat(date).isAfterOrEqualTo(now));
+
+    }
+
+
     @After
     public void after() {
         Account.getInstance().setBalance(0);
