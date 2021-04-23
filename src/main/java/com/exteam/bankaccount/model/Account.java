@@ -18,7 +18,6 @@ public class Account {
 
     private static Account uniqueInstance;
 
-    private long id;
     private long balance;
     private List<Operation> history = new ArrayList<>();
 

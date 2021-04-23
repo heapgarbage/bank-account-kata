@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -67,7 +68,7 @@ public class AccountServiceTest {
 
         assertThat(account.getHistory())
                 .extracting(Operation::getAmount, Operation::getType)
-                .containsExactly(Tuple.tuple(amount1, Operation.OperationType.DEPOSIT),
+                .containsExactlyInAnyOrder(Tuple.tuple(amount1, Operation.OperationType.DEPOSIT),
                         Tuple.tuple(amount2, Operation.OperationType.DEPOSIT));
 
         assertThat(account.getHistory())
@@ -137,7 +138,7 @@ public class AccountServiceTest {
 
         assertThat(Account.getInstance().getHistory())
                 .extracting(Operation::getAmount, Operation::getType)
-                .containsExactly(Tuple.tuple(amountToWithdraw, Operation.OperationType.WITHDRAWAL));
+                .containsExactlyInAnyOrder(Tuple.tuple(amountToWithdraw, Operation.OperationType.WITHDRAWAL));
 
         assertThat(Account.getInstance().getHistory())
                 .extracting(Operation::getDate)
@@ -181,7 +182,8 @@ public class AccountServiceTest {
         assertThat(account)
                 .extracting(Account::getBalance).isEqualTo(amount1 + amount2 - amount3);
 
-        assertThat(account.getHistory())
+        List<Operation> operations = accountService.checkOperations();
+        assertThat(operations)
                 .extracting(Operation::getAmount, Operation::getType)
                 .containsExactlyInAnyOrder(Tuple.tuple(amount1, Operation.OperationType.DEPOSIT),
                         Tuple.tuple(amount2, Operation.OperationType.DEPOSIT),
