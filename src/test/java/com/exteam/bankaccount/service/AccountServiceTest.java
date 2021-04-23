@@ -94,6 +94,75 @@ public class AccountServiceTest {
                 .hasMessage(String.format(accountService.DEPOSIT_EXCEPTION_MESSAGE_TEMPLATE, amount));
     }
 
+    @Test
+    public void should_update_account_when_withdrawal() throws AccountServiceException {
+        //Given
+        Instant now = Instant.now();
+        Account account = Account.getInstance();
+        long initialBalance = 500;
+        account.setBalance(initialBalance);
+        long amountToWithdraw = 350;
+
+        //when
+        accountService.makeWithdrawal(amountToWithdraw);
+
+        //Then
+        assertThat(Account.getInstance())
+                .extracting(Account::getBalance).isEqualTo(initialBalance - amountToWithdraw);
+
+        assertThat(Account.getInstance().getHistory())
+                .extracting(Operation::getAmount, Operation::getType)
+                .containsExactly(Tuple.tuple(amountToWithdraw, Operation.OperationType.WITHDRAWAL));
+
+        assertThat(Account.getInstance().getHistory())
+                .extracting(Operation::getDate)
+                .allSatisfy(date -> assertThat(date).isAfterOrEqualTo(now));
+    }
+
+    @Test
+    public void should_update_account_when_withdrawal_all_the_savings() throws AccountServiceException {
+        //Given
+        Instant now = Instant.now();
+        Account account = Account.getInstance();
+        long initialBalance = 500;
+        account.setBalance(initialBalance);
+        long amountToWithdraw = 500;
+
+        //when
+        accountService.makeWithdrawal(amountToWithdraw);
+
+        //Then
+        assertThat(Account.getInstance())
+                .extracting(Account::getBalance).isEqualTo(initialBalance - amountToWithdraw);
+
+        assertThat(Account.getInstance().getHistory())
+                .extracting(Operation::getAmount, Operation::getType)
+                .containsExactly(Tuple.tuple(amountToWithdraw, Operation.OperationType.WITHDRAWAL));
+
+        assertThat(Account.getInstance().getHistory())
+                .extracting(Operation::getDate)
+                .allSatisfy(date -> assertThat(date).isAfterOrEqualTo(now));
+    }
+
+    @Test
+    public void should_not_update_account_and_throw_exception_when_withdrawal_amount_is_greater_than_balance() throws AccountServiceException {
+        //Given
+        Account account = Account.getInstance();
+        long initialBalance = 500;
+        account.setBalance(initialBalance);
+        long amountToWithdraw = 750;
+
+        //when, then
+        assertThatThrownBy(() -> accountService.makeWithdrawal(amountToWithdraw))
+                .isInstanceOf(AccountServiceException.class)
+                .hasMessage(String.format(accountService.WITHDRAWAL_EXCEPTION_MESSAGE_TEMPLATE, amountToWithdraw, initialBalance));
+
+        assertThat(account)
+                .extracting(Account::getBalance).isEqualTo(initialBalance);
+
+        assertThat(account.getHistory()).isEmpty();
+    }
+
     @After
     public void after() {
         Account.getInstance().setBalance(0);
